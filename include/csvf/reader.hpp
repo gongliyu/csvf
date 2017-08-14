@@ -19,41 +19,47 @@ namespace csvf
         {
         }
     };
-    
+
     class reader
     {
     public:
         using size_type = size_t;
+        using record_type = std::vector<std::string>
         enum class quote_rule {doubled, escaped, verbatim, none};
-        reader(const reader&) = delete;
-        reader& operator=(const reader&) = delete;
-        
+
+        virtual ~reader();
+
         template <typename... Args>
-        explicit reader(const std::string& fname, Args... args):
-            m_filename(fname), m_file(fname)
+        explicit reader(const std::string& fname, Args... args)
         {
+            open(fname, args...);
+        }
+
+        template <typename... Args>
+        reader& open(const std::string& fname, Args... args)
+        {
+            m_filename = fname;
+            m_file.close();
+            m_file.open(fname);
             function_options fopts;
             fopts.parse(args...);
-            std::cout<<"fopts size(): "<<fopts.size()<<std::endl;
-            fopts.assign("Sep", m_sep);
-                                     // "Fill", m_fill,
-                                     // "quote_rule", m_quote_rule,
-                                     // "StripWhite", m_stripWhite,
-                                     // "Quote", m_quote,
-                                     // "Verbose", m_verbose);
+            m_sep = '\0';
+            m_eol.clear();
+            m_nfields = -1;
+            fopts.assign("Sep", m_sep,
+                         "Fill", m_fill,
+                         "quote_rule", m_quote_rule,
+                         "StripWhite", m_strip_white,
+                         "Quote", m_quote,
+                         "Verbose", m_verbose);
             init();
-                                     
         }
         
-
-
         operator bool() const
         {
             return m_pos<m_end;
         }
         
-        ~reader();
-
         reader& init();
 
         reader& strip_if_bom();
@@ -61,8 +67,6 @@ namespace csvf
         reader& detect_eol();
 
         reader& detect_sep_quote_rule_nfields();
-
-        reader& detect_field_names();
 
         reader& skip_if_white();
         
@@ -93,8 +97,8 @@ namespace csvf
 
         std::string read_field();
 
-        reader& read_record(std::vector<std::string>& content);
-        std::vector<std::string> read_record();
+        reader& read_record(record_type& record);
+        record_type read_record();
         
         std::vector<char> get_eol() const
         {
@@ -127,19 +131,21 @@ namespace csvf
         }
         
     private:
-        const std::string m_filename;
-
+        std::string m_filename;
         boost::iostreams::mapped_file_source m_file;
         const char *m_pos = nullptr;
         const char *m_begin = nullptr;
         const char *m_end = nullptr;
         int m_nfields = -1;
 
+        quote_rule m_quote_rule{quote_rule::doubled};
+        
         std::vector<char> m_eol;
         char m_sep{'\0'};
-        bool m_fill{false};
-        quote_rule m_quote_rule{quote_rule::doubled};
+        bool m_fill{true};
+
         bool m_strip_white{false};
+        bool skip_blank_lines{true};
         char m_quote{'"'};
         bool m_blankIsANAString{false};
         std::vector<std::string> m_NAStrings{{"NA"}};

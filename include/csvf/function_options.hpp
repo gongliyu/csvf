@@ -12,20 +12,6 @@
 
 namespace
 {
-    // template <typename To>
-    // To try_any_cast(boost::any from)
-    // {
-    //     return boost::any_cast<To>(from);
-    // }
-
-    // template <typename To, typename T, typename... Args>
-    // typename std::enable_if<sizeof...(Args)>0,To>::type
-    // try_any_cast(boost::any from)
-    // {
-    //     try
-    // }
-    
-    
     template <typename To>
     To any_cast(const boost::any& from)
     {
@@ -72,7 +58,7 @@ public:
     template <typename T, typename... Args>
     type& parse(const std::string& name, const T& value, Args... args)
     {
-        std::cout<<__FUNCTION__<<" "<<name<<std::endl;
+        //std::cout<<__FUNCTION__<<" "<<name<<std::endl;
         static_assert(sizeof...(Args) % 2 == 0,
                       "arguments of parse should be name-value"
                       " pairs. However, the current number of"
@@ -101,7 +87,7 @@ public:
     template <typename T, typename... Args>
     type& assign(const std::string& name, T& target, Args&... args)
     {
-        std::cout<<__FUNCTION__<<" "<<name<<std::endl;
+        //std::cout<<__FUNCTION__<<" "<<name<<std::endl;
         if (empty())
             return *this;
         static_assert(sizeof...(Args) % 2 == 0,

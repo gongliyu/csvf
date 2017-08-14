@@ -198,6 +198,7 @@ namespace csvf
             m_sep = sep;
             for (auto rule : rules)
             {
+                //std::cout<<"sep="<<sep2str(sep)<<" rule="<<rule<<std::endl;
                 m_quote_rule = rule;
 
                 // analyse contiguous group for current candidate
@@ -279,10 +280,11 @@ namespace csvf
     
         if (m_nfields<1)
             throw std::runtime_error("Internal error");
-        int nFields;
+        int nfields;
         const char *pos = m_pos;
-        skip_record(nFields);
-        if (!m_fill && nFields!=m_nfields)
+        skip_record(nfields);
+        m_pos = pos;
+        if (!m_fill && nfields!=m_nfields)
             throw std::logic_error("Internal error");
 
         if (m_verbose)
@@ -296,16 +298,6 @@ namespace csvf
         }
     }
 
-    reader& reader::detect_field_names()
-    {
-        const char *pos=m_pos;
-        std::vector<std::string> names = read_record();
-        for (auto& name : names)
-        {
-            
-        }
-    }
-        
     reader& reader::skip_if_white()
     {
         // skip space if it is not separator
@@ -496,6 +488,7 @@ namespace csvf
         const char *contentBegin, *contentEnd;
         skip_field_content(&contentBegin, &contentEnd);
         field.assign(contentBegin, contentEnd);
+        skip_if_sep();
         return *this;
     }
 
@@ -506,12 +499,33 @@ namespace csvf
         return field;
     }
 
-    std::string reader::read_record()
+    reader& reader::read_record(std::vector<std::string>& content)
     {
+        content.resize(get_nfields());
+        int i=0;
         while (!is_eol_or_end())
         {
-            
+            if (i>=get_nfields())
+                throw bad_format("nfields not match.");
+            content[i] = read_field();
+            i++;
         }
+        assert(i<=get_nfields());
+        if (i<get_nfields())
+        {
+            if (m_fill)
+                std::fill(content.begin()+i, content.end(), "");
+            else
+                throw bad_format("nfields not match.");
+        }
+        skip_if_eol();
+    }
+
+    std::vector<std::string> reader::read_record()
+    {
+        std::vector<std::string> content;
+        read_record(content);
+        return content;
     }
 
     inline bool reader::is_sep() const
@@ -533,27 +547,4 @@ namespace csvf
     {
         return m_pos>=m_end || *m_pos==m_eol[0];
     }
-
-        
-
-    //reader& reader::read_record(std::vector<std::string>
-
-    
-    // bool reader::IsNAString(const char *fieldStart)
-    // {
-    //     SkipWhite(&fieldStart);
-    //     for(auto str : m_NAStrings)
-    //     {
-    //         const char *ch1 = fieldStart;
-    //         const char *ch2 = str.data();
-    //         while (ch1<m_eof && *ch1==*ch2) {ch1++; ch2++;}
-    //         if (*ch2=='\0')
-    //         {
-    //             SkipWhite(&ch1);
-    //             if (ch1>=m_eof || *ch1==m_sep || *ch1==m_eol[0])
-    //                 return true;
-    //         }
-    //     }
-    // }
-
 }
