@@ -24,7 +24,7 @@ namespace csvf
     {
     public:
         using size_type = size_t;
-        using record_type = std::vector<std::string>
+        using record_type = std::vector<std::string>;
         enum class quote_rule {doubled, escaped, verbatim, none};
 
         virtual ~reader();
@@ -60,7 +60,7 @@ namespace csvf
             return m_pos<m_end;
         }
         
-        reader& init();
+        virtual reader& init();
 
         reader& strip_if_bom();
 
