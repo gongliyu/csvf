@@ -27,6 +27,7 @@ namespace csvf
         using record_type = std::vector<std::string>;
         enum class quote_rule {doubled, escaped, verbatim, none};
 
+        reader() = default;
         virtual ~reader();
 
         template <typename... Args>
