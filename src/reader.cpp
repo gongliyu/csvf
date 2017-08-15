@@ -528,22 +528,22 @@ namespace csvf
         return content;
     }
 
-    inline bool reader::is_sep() const
+    bool reader::is_sep() const
     {
         return m_pos<m_end && *m_pos==m_sep;
     }
 
-    inline bool reader::is_eol() const
+    bool reader::is_eol() const
     {
         return m_pos<m_end && *m_pos==m_eol[0];
     }
 
-    inline bool reader::is_end() const
+    bool reader::is_end() const
     {
         return m_pos>=m_end;
     }
 
-    inline bool reader::is_eol_or_end() const
+    bool reader::is_eol_or_end() const
     {
         return m_pos>=m_end || *m_pos==m_eol[0];
     }

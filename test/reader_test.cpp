@@ -78,7 +78,7 @@ BOOST_AUTO_TEST_CASE(read_record)
         reader.read_record()==
         std::vector<std::string>({"","",""}),
         boost::test_tools::per_element());
-
     BOOST_TEST(!reader);
+    BOOST_TEST(reader.is_end());
 }
 
