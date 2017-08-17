@@ -4,6 +4,7 @@
 #include <cassert>
 #include <array>
 #include <algorithm>
+#include <cctype>
 #include <csvf/reader.hpp>
 
 namespace
@@ -44,16 +45,6 @@ namespace csvf
     reader::~reader()
     {
         m_file.close();
-    }
-
-    reader& reader::init()
-    {
-        m_begin = m_file.data();
-        m_end = m_file.data() + get_file_size();
-        strip_if_bom();
-        detect_eol();
-        detect_sep_quote_rule_nfields();
-        return *this;
     }
 
     reader& reader::strip_if_bom()
@@ -154,6 +145,12 @@ namespace csvf
             else
                 throw std::logic_error("some logic error in the code");
         }
+    }
+
+    reader& reader::strip_space()
+    {
+        while (m_begin<m_end && isspace(*m_begin)) m_begin++;
+        return *this;
     }
     
     reader& reader::detect_sep_quote_rule_nfields()

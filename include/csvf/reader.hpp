@@ -53,7 +53,13 @@ namespace csvf
                          "StripWhite", m_strip_white,
                          "Quote", m_quote,
                          "Verbose", m_verbose);
-            init();
+            m_begin = m_file.data();
+            m_end = m_file.data() + m_file.size();
+            strip_if_bom();
+            detect_eol();
+            strip_space();
+            detect_sep_quote_rule_nfields();
+            return *this;
         }
         
         operator bool() const
@@ -61,11 +67,11 @@ namespace csvf
             return m_pos<m_end;
         }
         
-        virtual reader& init();
-
         reader& strip_if_bom();
 
         reader& detect_eol();
+
+        reader& strip_space();
 
         reader& detect_sep_quote_rule_nfields();
 
