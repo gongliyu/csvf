@@ -137,7 +137,7 @@ namespace csvf
             return m_field_names;
         }
         
-    private:
+    protected:
         std::string m_filename;
         boost::iostreams::mapped_file_source m_file;
         const char *m_pos = nullptr;
