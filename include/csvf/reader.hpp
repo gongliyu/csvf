@@ -8,7 +8,7 @@
 #include <stdexcept>
 #include <boost/iostreams/device/mapped_file.hpp>
 
-#include "function_options.hpp"
+#include "options.hpp"
 
 namespace csvf
 {
@@ -42,17 +42,17 @@ namespace csvf
             m_filename = fname;
             m_file.close();
             m_file.open(fname);
-            function_options fopts;
-            fopts.parse(args...);
+            auto opts = options::parse(args...);
             m_sep = '\0';
             m_eol.clear();
             m_nfields = -1;
-            fopts.assign("Sep", m_sep,
-                         "Fill", m_fill,
-                         "quote_rule", m_quote_rule,
-                         "StripWhite", m_strip_white,
-                         "Quote", m_quote,
-                         "Verbose", m_verbose);
+            options::assign(opts,
+                            "Sep", m_sep,
+                            "Fill", m_fill,
+                            "quote_rule", m_quote_rule,
+                            "StripWhite", m_strip_white,
+                            "Quote", m_quote,
+                            "Verbose", m_verbose);
             m_begin = m_file.data();
             m_end = m_file.data() + m_file.size();
             strip_if_bom();
