@@ -10,20 +10,20 @@
 namespace
 {
     template<typename T>
-    std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, csvf::reader::quote_rule rule)
+    std::basic_ostream<T>& operator<<(std::basic_ostream<T>& stream, csvf::reader::quote_rule_type rule)
     {
         switch(rule)
         {
-        case csvf::reader::quote_rule::doubled:
+        case csvf::reader::quote_rule_type::doubled:
             stream<<"doubled";
             break;
-        case csvf::reader::quote_rule::escaped:
+        case csvf::reader::quote_rule_type::escaped:
             stream<<"escaped";
             break;
-        case csvf::reader::quote_rule::verbatim:
+        case csvf::reader::quote_rule_type::verbatim:
             stream<<"verbatim";
             break;
-        case csvf::reader::quote_rule::none:
+        case csvf::reader::quote_rule_type::none:
             stream<<"none";
             break;
         default:
@@ -52,7 +52,7 @@ namespace csvf
         assert(m_begin && m_end);
         if (m_verbose)
             std::cout << "detect and skip BOM" << std::endl;
-        if(get_file_size() >= 3 &&
+        if(file_size() >= 3 &&
            std::memcmp(m_begin, "\xEF\xBB\xBF", 3) == 0)
         {
             m_begin += 3;
@@ -61,7 +61,7 @@ namespace csvf
                     " at the start of the file and skipped."
                          <<std::endl;
         }
-        else if(get_file_size() >= 4 &&
+        else if(file_size() >= 4 &&
                 std::memcmp(m_begin, "\x84\x31\x95\x33", 4) == 0)
         {
             m_begin += 4;
@@ -70,7 +70,7 @@ namespace csvf
                     "found at the start of the file and skipped."
                          <<std::endl;
         }
-        else if (get_file_size() >= 2 &&
+        else if (file_size() >= 2 &&
                  m_begin[0] + m_begin[1] == '\xFE' + '\xFF')
         {  // either 0xFE 0xFF or 0xFF 0xFE
             throw std::runtime_error(
@@ -175,7 +175,7 @@ namespace csvf
         assert(!m_eol.empty());
         char topSep = m_eol[0];
         
-        quote_rule topquote_rule = quote_rule::doubled;
+        quote_rule_type topquote_rule = quote_rule_type::doubled;
         int topNmax = 1; // maximum number of columns
 
         // remember where the winning jumpline from jump 0 ends,
@@ -187,9 +187,9 @@ namespace csvf
         // for each contiguous group with the same number of fields
         // the first and second element in pairs are number of fields
         // and number of lines respectively.
-        std::array<quote_rule,4> rules{
-            quote_rule::doubled, quote_rule::escaped,
-                quote_rule::verbatim, quote_rule::none};
+        std::array<quote_rule_type,4> rules{
+            quote_rule_type::doubled, quote_rule_type::escaped,
+                quote_rule_type::verbatim, quote_rule_type::none};
         for (auto sep : seps)
         {
             m_sep = sep;
@@ -323,7 +323,7 @@ namespace csvf
         if(nwBegin) *nwBegin = m_pos; 
       
 
-        if (*m_pos!=m_quote || m_quote_rule==quote_rule::none)
+        if (*m_pos!=m_quote || m_quote_rule==quote_rule_type::none)
         {
             // not quoted, looking for sep or eol
             while (m_pos<m_end && *m_pos!=m_sep && *m_pos!=m_eol[0])
@@ -335,7 +335,7 @@ namespace csvf
             quoted = true;
             switch(m_quote_rule)
             {
-            case quote_rule::doubled:
+            case quote_rule_type::doubled:
                 // doubled quote, looking for closing quote
                 while (++m_pos<m_end && eolCount<100)
                 {
@@ -352,7 +352,7 @@ namespace csvf
                     throw std::logic_error("unknown quoting style");
                 break;
 
-            case quote_rule::escaped:
+            case quote_rule_type::escaped:
                 while (++m_pos<m_end && *m_pos!=m_quote && eolCount<100)
                 {
                     eolCount += (*m_pos==m_eol[0]);
@@ -362,7 +362,7 @@ namespace csvf
                     throw std::logic_error("unknown quoting style");
                 break;
 
-            case quote_rule::verbatim:
+            case quote_rule_type::verbatim:
                 // verbatim quoting, looking for quote followed by
                 // sep or eol
                 quoted = false;
@@ -498,17 +498,17 @@ namespace csvf
 
     reader& reader::read_record(std::vector<std::string>& content)
     {
-        content.resize(get_nfields());
+        content.resize(nfields());
         int i=0;
         while (!is_eol_or_end())
         {
-            if (i>=get_nfields())
+            if (i>=nfields())
                 throw bad_format("nfields not match.");
             content[i] = read_field();
             i++;
         }
-        assert(i<=get_nfields());
-        if (i<get_nfields())
+        assert(i<=nfields());
+        if (i<nfields())
         {
             if (m_fill)
                 std::fill(content.begin()+i, content.end(), "");

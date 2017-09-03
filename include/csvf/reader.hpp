@@ -25,7 +25,7 @@ namespace csvf
     public:
         using size_type = size_t;
         using record_type = std::vector<std::string>;
-        enum class quote_rule {doubled, escaped, verbatim, none};
+        enum class quote_rule_type {doubled, escaped, verbatim, none};
 
         reader() = default;
         virtual ~reader();
@@ -107,32 +107,32 @@ namespace csvf
         reader& read_record(record_type& record);
         record_type read_record();
         
-        std::vector<char> get_eol() const
+        std::vector<char> eol() const
         {
             return m_eol;
         };
         
-        size_type get_file_size() const
+        size_type file_size() const
         {
             return m_file.size();
         };
 
-        char get_sep() const
+        char sep() const
         {
             return m_sep;
         }
 
-        quote_rule get_quote_rule() const
+        quote_rule_type quote_rule() const
         {
             return m_quote_rule;
         }
 
-        int get_nfields() const
+        int nfields() const
         {
             return m_nfields;
         }
 
-        std::vector<std::string> get_field_names() const
+        std::vector<std::string> field_names() const
         {
             return m_field_names;
         }
@@ -145,7 +145,7 @@ namespace csvf
         const char *m_end = nullptr;
         int m_nfields = -1;
 
-        quote_rule m_quote_rule{quote_rule::doubled};
+        quote_rule_type m_quote_rule{quote_rule_type::doubled};
         
         std::vector<char> m_eol;
         char m_sep{'\0'};
