@@ -8,7 +8,7 @@ endif()
 
 set(CMAKE_CXX_STANDARD 14)
 
-find_package(Boost REQUIRED COMPONENTS iostreams)
+find_package(Boost REQUIRED COMPONENTS iostreams filesystem system)
 
 include(CTest)
 

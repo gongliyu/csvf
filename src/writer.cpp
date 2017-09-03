@@ -24,10 +24,15 @@ namespace csvf
     writer& writer::operator<<(const std::vector<std::string>& record)
     {
         return write_record(record);
-    };
+    }
 
     writer& writer::flush()
     {
         m_stream.flush();
+    }
+
+    writer& writer::close()
+    {
+        m_stream.close();
     }
 }

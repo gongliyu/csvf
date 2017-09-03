@@ -15,6 +15,7 @@ namespace csvf
     {
     public:
         using size_type = size_t;
+        writer() = default;
         virtual ~writer(){};
 
         template <typename... Args>
@@ -34,6 +35,7 @@ namespace csvf
         writer& write_record(const std::vector<std::string>&);
         writer& operator<<(const std::vector<std::string>& record);
         writer& flush();
+        writer& close();
 
     private:
         std::string m_filename;
