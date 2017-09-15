@@ -46,6 +46,9 @@ BOOST_AUTO_TEST_CASE(split_by_field)
 {
     std::string infname = "simple.csv";
     std::vector<std::string> outfnames(0);
+    // outfnames.push_back("simple1.csv");
+    // outfnames.push_back("simple2.csv");
+
     outfnames.push_back(boost::filesystem::unique_path().native());
     outfnames.push_back(boost::filesystem::unique_path().native());
     csvf::split_by_field(infname, outfnames);

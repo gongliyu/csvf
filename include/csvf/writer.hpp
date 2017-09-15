@@ -31,9 +31,26 @@ namespace csvf
             m_stream.open(fname);
         };
 
-        writer& write_field(const std::string&);
-        writer& write_record(const std::vector<std::string>&);
-        writer& operator<<(const std::vector<std::string>& record);
+        template <typename RecordType>
+        writer& write_record(const RecordType& record)
+        {
+            int n = record.size();
+            int i = 0;
+            for (auto& field : record)
+            {
+                i++;
+                m_stream<<field;
+                m_stream<<(i==n?'\n':m_sep);
+            }
+            return *this;
+        };
+
+        template <typename RecordType>
+        writer& operator<<(const RecordType& record)
+        {
+            return write_record(record);
+        }
+        
         writer& flush();
         writer& close();
 

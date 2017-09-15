@@ -6,6 +6,7 @@
 #include <algorithm>
 #include <cctype>
 #include <csvf/reader.hpp>
+#include <boost/format.hpp>
 
 namespace
 {
@@ -36,8 +37,20 @@ namespace
     {
         if (sep==' ') return "blank";
         else if(sep=='\t') return "\\t";
+        else if(sep=='\n') return "\\n";
         else return std::string(1,sep);
     }
+
+    inline std::string make_source_error( std::string msg,
+      char const* file, char const* function,
+      std::size_t line
+    ) {
+        return std::string{} + file + "(" + std::to_string(line)
+                                 + "): [" + function + "] " + msg;
+    }
+    
+#define SOURCE_ERROR(...) make_source_error(__VA_ARGS__, __FILE__, __func__, __LINE__ )
+    
 }
 
 namespace csvf
@@ -180,7 +193,6 @@ namespace csvf
 
         // remember where the winning jumpline from jump 0 ends,
         // to know its size excluding header
-        const char *firstJumpEnd = nullptr;
         constexpr int JUMPLINES = 100;
 
         // group info store the number of fields and number of lines
@@ -195,7 +207,6 @@ namespace csvf
             m_sep = sep;
             for (auto rule : rules)
             {
-                //std::cout<<"sep="<<sep2str(sep)<<" rule="<<rule<<std::endl;
                 m_quote_rule = rule;
 
                 // analyse contiguous group for current candidate
@@ -217,14 +228,12 @@ namespace csvf
                     if (thisncol!=lastncol)
                         group_info.emplace_back(thisncol, 0);
                     group_info.back().second++;
-
-                    lastncol = thisncol;
+                                    lastncol = thisncol;
                 }
 
                 if (group_info.empty()) continue;
-                if (!firstJumpEnd) firstJumpEnd = m_pos;
                 bool updated = false;
-                int nmax = 0;
+                int nmax = 0; // max nfields in this iteration
 
                 // find the contiguous group with the maximum
                 // number of lines
@@ -241,15 +250,14 @@ namespace csvf
                         topNumFields = info.first;
                         topSep = sep;
                         topquote_rule = rule;
-                        firstJumpEnd = m_pos;
                         updated = true;
+                        std::cout<<"updated."<<std::endl;
                     }
                 }
                 if (updated) topNmax = nmax;
             }
         }
-        if (!firstJumpEnd) throw bad_format("Failed to detect sep");
-
+        
         m_quote_rule = topquote_rule;
         m_sep = topSep;
         m_pos = m_begin;
@@ -284,14 +292,19 @@ namespace csvf
         if (!m_fill && nfields!=m_nfields)
             throw std::logic_error("Internal error");
 
+        std::cout<<"m_sep="<<sep2str(m_sep)<<std::endl;
+        
         if (m_verbose)
         {
-            std::cout
-                <<"detected sep="<<sep2str(topSep)
-                <<" quote rule="<<topquote_rule
-                <<" top nlines="<<topNumLines
-                <<" top nfields="<<topNumFields
-                <<std::endl;
+            if (m_sep==m_eol[0])
+                std::cout<<"Failed to detect sep, treat file as single column csv"<<std::endl;
+            else
+                std::cout
+                    <<"detected sep="<<sep2str(topSep)
+                    <<" quote rule="<<topquote_rule
+                    <<" top nlines="<<topNumLines
+                    <<" top nfields="<<topNumFields
+                    <<std::endl;
         }
     }
 
@@ -307,6 +320,7 @@ namespace csvf
             while (*m_pos==' ' || *m_pos=='\t') m_pos++;
         return *this;
     }
+
 
     reader& reader::skip_field_content(
         const char **nwBegin, const char**nwEnd)
@@ -434,6 +448,8 @@ namespace csvf
     reader& reader::skip_sep()
     {
         assert(*m_pos==m_sep);
+        if (m_sep == m_eol[0]) return *this;
+
         m_pos++;
         if (m_sep==' ')
             while (m_pos<m_end && *m_pos==' ')
@@ -443,7 +459,7 @@ namespace csvf
 
     reader& reader::skip_if_sep()
     {
-        if (*m_pos==m_sep) skip_sep();
+        if (m_sep!=m_eol[0] && *m_pos==m_sep) skip_sep();
         return *this;
     }
 
@@ -465,12 +481,21 @@ namespace csvf
     reader& reader::skip_record(int& nfields)
     {
         nfields = 0;
-        while (m_pos<m_end && *m_pos!=m_eol[0])
-        {
+        while (!is_eol_or_end()) {
             skip_field();
             nfields++;
         }
         skip_if_eol();
+
+        if (m_skip_blank_lines) {
+            while (!is_end() &&
+                   (is_eol() || (m_strip_white?is_white():false))) {
+                if (m_strip_white) skip_if_white();
+                skip_if_eol();
+                if (m_strip_white) skip_if_white();
+            }
+        }
+
         return *this;
     }
 
@@ -482,28 +507,30 @@ namespace csvf
 
     reader& reader::read_field(std::string& field)
     {
-        const char *contentBegin, *contentEnd;
-        skip_field_content(&contentBegin, &contentEnd);
-        field.assign(contentBegin, contentEnd);
-        skip_if_sep();
+        field = static_cast<std::string>(read_field());
         return *this;
     }
 
-    std::string reader::read_field()
+    reader::field_type reader::read_field()
     {
-        std::string field;
-        read_field(field);
-        return field;
+        const char *contentBegin, *contentEnd;
+        skip_field_content(&contentBegin, &contentEnd);
+        skip_if_sep();
+        assert(contentEnd >= contentBegin);
+        if (contentEnd > contentBegin)
+            return reader::field_type(contentBegin, contentEnd-contentBegin);
+        else
+            return reader::field_type("");
     }
 
-    reader& reader::read_record(std::vector<std::string>& content)
+    reader& reader::read_record(reader::record_type& content)
     {
         content.resize(nfields());
         int i=0;
         while (!is_eol_or_end())
         {
             if (i>=nfields())
-                throw bad_format("nfields not match.");
+                throw bad_format("read_record: nfield not match.");
             content[i] = read_field();
             i++;
         }
@@ -516,18 +543,36 @@ namespace csvf
                 throw bad_format("nfields not match.");
         }
         skip_if_eol();
+
+        if (m_skip_blank_lines) {
+            while (!is_end() &&
+                   (is_eol() || (m_strip_white?is_white():false))) {
+                if (m_strip_white) skip_if_white();
+                skip_if_eol();
+                if (m_strip_white) skip_if_white();
+            }
+        }
+        
+        return *this;
     }
 
-    std::vector<std::string> reader::read_record()
+    reader::record_type reader::read_record()
     {
-        std::vector<std::string> content;
-        read_record(content);
-        return content;
+        reader::record_type record;
+        read_record(record);
+        return record;
+    }
+
+    bool reader::is_white() const
+    {
+        if (m_sep==' ') return *m_pos=='\t';
+        else if (m_sep=='\t') return *m_pos==' ';
+        else return *m_pos==' ' || *m_pos=='\t';
     }
 
     bool reader::is_sep() const
     {
-        return m_pos<m_end && *m_pos==m_sep;
+        return m_pos<m_end && m_sep!=m_eol[0] && *m_pos==m_sep;
     }
 
     bool reader::is_eol() const

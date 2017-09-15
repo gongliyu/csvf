@@ -48,6 +48,36 @@ BOOST_AUTO_TEST_CASE(detect_nfields)
     BOOST_TEST(csvf::reader("ch11b.dat").nfields()==5);
 }
 
+BOOST_AUTO_TEST_CASE(read_record_onecolumn)
+{
+    csvf::reader reader("onecolumn.csv");
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"hi"}),
+        boost::test_tools::per_element());
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"hello"}),
+        boost::test_tools::per_element());
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"nihao"}),
+        boost::test_tools::per_element());
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"2"}),
+        boost::test_tools::per_element());
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"1"}),
+        boost::test_tools::per_element());
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"3"}),
+        boost::test_tools::per_element());
+    BOOST_TEST(!reader);
+}
+
 
 BOOST_AUTO_TEST_CASE(read_record)
 {
@@ -82,3 +112,46 @@ BOOST_AUTO_TEST_CASE(read_record)
     BOOST_TEST(reader.is_end());
 }
 
+BOOST_AUTO_TEST_CASE(blank_lines)
+{
+    csvf::reader reader("blank_lines.txt");
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"a","b","c"}),
+        boost::test_tools::per_element());
+    for (int i=0; i<5; i++) reader.skip_record();
+    for (int i=0; i<3; i++) {
+        BOOST_TEST(
+            reader.read_record()==
+            std::vector<std::string>({"1","2","3"}),
+            boost::test_tools::per_element());
+    }
+    BOOST_TEST(!reader);
+
+    reader.open("blank_lines2.txt");
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"a","b","c"}),
+        boost::test_tools::per_element());
+    for (int i=0; i<5; i++) {
+        BOOST_TEST(
+            reader.read_record()==
+            std::vector<std::string>({"1","2","3"}),
+            boost::test_tools::per_element());
+    }
+    BOOST_TEST(!reader);
+
+    reader.open("blank_lines3.txt");
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"a","b","c"}),
+        boost::test_tools::per_element());
+    for (int i=0; i<5; i++) {
+        BOOST_TEST(
+            reader.read_record()==
+            std::vector<std::string>({"1","2","3"}),
+            boost::test_tools::per_element());
+    }
+    BOOST_TEST(!reader);
+
+}

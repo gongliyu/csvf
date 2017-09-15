@@ -7,6 +7,7 @@
 #include <cstdint>
 #include <stdexcept>
 #include <boost/iostreams/device/mapped_file.hpp>
+#include <boost/utility/string_view.hpp>
 
 #include "options.hpp"
 
@@ -24,7 +25,8 @@ namespace csvf
     {
     public:
         using size_type = size_t;
-        using record_type = std::vector<std::string>;
+        using field_type = boost::string_view;
+        using record_type = std::vector<field_type>;
         enum class quote_rule_type {doubled, escaped, verbatim, none};
 
         reader() = default;
@@ -47,12 +49,13 @@ namespace csvf
             m_eol.clear();
             m_nfields = -1;
             options::assign(opts,
-                            "Sep", m_sep,
-                            "Fill", m_fill,
+                            "sep", m_sep,
+                            "fill", m_fill,
                             "quote_rule", m_quote_rule,
-                            "StripWhite", m_strip_white,
-                            "Quote", m_quote,
-                            "Verbose", m_verbose);
+                            "strip_white", m_strip_white,
+                            "quote", m_quote,
+                            //"skip_blank_lines", m_skip_blank_lines,
+                            "verbose", m_verbose);
             m_begin = m_file.data();
             m_end = m_file.data() + m_file.size();
             strip_if_bom();
@@ -95,14 +98,14 @@ namespace csvf
 
         reader& skip_record();
 
-        reader& read_field(std::string& content);
-
+        bool is_white() const;
         bool is_sep() const;
         bool is_eol() const;
         bool is_end() const;
         bool is_eol_or_end() const;
 
-        std::string read_field();
+        reader& read_field(std::string& field);
+        field_type read_field();
 
         reader& read_record(record_type& record);
         record_type read_record();
@@ -151,10 +154,10 @@ namespace csvf
         char m_sep{'\0'};
         bool m_fill{true};
 
-        bool m_strip_white{false};
-        bool skip_blank_lines{true};
+        bool m_strip_white{true};
+        bool m_skip_blank_lines{true};
         char m_quote{'"'};
-        bool m_blankIsANAString{false};
+        //bool m_blankIsANAString{false};
         std::vector<std::string> m_NAStrings{{"NA"}};
         std::vector<std::string> m_field_names{};
         bool m_verbose{true};
