@@ -13,5 +13,9 @@ add_boost_test(split_test.cpp
     DEPENDENCY csvf ${Boost_LIBRARIES}
     WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data
     )
+add_boost_test(options_test.cpp
+    DEPENDENCY csvf ${Boost_LIBRARIES}
+    WORKING_DIRECTORY ${CMAKE_CURRENT_BINARY_DIR}/data
+    )
   
 #add_test(NAME reader COMMAND ReaderTest WORKING_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/data)

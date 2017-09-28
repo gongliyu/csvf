@@ -153,5 +153,4 @@ BOOST_AUTO_TEST_CASE(blank_lines)
             boost::test_tools::per_element());
     }
     BOOST_TEST(!reader);
-
 }

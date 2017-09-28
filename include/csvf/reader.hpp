@@ -114,19 +114,37 @@ namespace csvf
             m_eol.clear();
             m_nfields = -1;
             options::assign(opts,
+                            "quote_rule", m_quote_rule,
+                            "eol", m_eol,
                             "sep", m_sep,
                             "fill", m_fill,
-                            "quote_rule", m_quote_rule,
                             "strip_white", m_strip_white,
-                            "quote", m_quote,
-                            //"skip_blank_lines", m_skip_blank_lines,
+                            "skip_blank_lines", m_skip_blank_lines,                            "quote", m_quote,
                             "verbose", m_verbose);
+
+            
+            
             m_begin = m_file.data();
             m_end = m_file.data() + m_file.size();
             strip_if_bom();
             detect_eol();
             strip_space();
             detect_sep_quote_rule_nfields();
+
+            // deal with options "begin_offset"
+            auto it = opts.find("begin_offset");
+            if (it != opts.end()) {
+                long long unsigned begin_offset = options::many_static_cast<long long unsigned, int, size_t>(it->second);
+                m_begin = m_file.data() + begin_offset;
+            }
+
+            // deal with options "end_offset"
+            it = opts.find("end_offset");
+            if (it != opts.end()) {
+                long long unsigned end_offset = options::many_static_cast<long long unsigned, int, size_t>(it->second);
+                m_end = m_file.data() + end_offset;
+            }
+            
             return *this;
         }
         
@@ -221,7 +239,7 @@ namespace csvf
         reader& skip_if_eol();
 
         /**
-         * Skip a record.
+         * Skip a record, including the EOL
          * @param nfields record the number of fields in the record
          *
          * @note The current position must be at the beginning of the
@@ -242,6 +260,7 @@ namespace csvf
         bool is_sep() const;
         bool is_eol() const;
         bool is_end() const;
+        bool is_begin() const;
         bool is_eol_or_end() const;
         /**@}*/
 
@@ -278,6 +297,12 @@ namespace csvf
          */
         record_type read_record();
         /**@}*/
+
+        /**
+         * Move current position to the beginning of next record from
+         * anywhere landed.
+         */
+        reader& anywhere_to_next_record_begin();
 
         /**
          * Get the end of line characters of this reader

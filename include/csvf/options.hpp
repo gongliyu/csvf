@@ -5,7 +5,7 @@
     #error "options requires C++11 support"
 #endif
 
-#include <map>
+#include <unordered_map>
 #include <type_traits>
 
 #if __cplusplus < 201701L
@@ -86,13 +86,13 @@ namespace options
     // parse
     //************************************************************
     inline
-    std::map<std::string,__IMPL_NAMESPACE::any> parse()
+    std::unordered_map<std::string,__IMPL_NAMESPACE::any> parse()
     {
-        return std::map<std::string,__IMPL_NAMESPACE::any>();
+        return std::unordered_map<std::string,__IMPL_NAMESPACE::any>();
     }
 
     template <typename T, typename... Args>
-    std::map<std::string,__IMPL_NAMESPACE::any> parse(
+    std::unordered_map<std::string,__IMPL_NAMESPACE::any> parse(
         const std::string& name,
         const T& value, Args... args)
     {
@@ -100,7 +100,9 @@ namespace options
                       "arguments of parse should be name-value"
                       " pairs. However, the current number of"
                       " arguments is an odd number.");
-        return parse(args...).emplace(name, value);
+        auto opts = parse(args...);
+        opts.emplace(name, value);
+        return opts;
     }
 
     //************************************************************
@@ -108,7 +110,7 @@ namespace options
     //************************************************************
     template <typename T>
     void assign(
-        std::map<std::string,__IMPL_NAMESPACE::any>& opts,
+        std::unordered_map<std::string,__IMPL_NAMESPACE::any>& opts,
         const std::string& name,
         T& to)
     {
@@ -122,9 +124,9 @@ namespace options
     
     template <typename T, typename... Args>
     void assign(
-        std::map<std::string,__IMPL_NAMESPACE::any>& opts,
+        std::unordered_map<std::string,__IMPL_NAMESPACE::any>& opts,
         const std::string& name,
-        T& to, Args... args)
+        T& to, Args&&... args)
     {
         assign(opts, name, to);
         assign(opts, args...);

@@ -585,8 +585,43 @@ namespace csvf
         return m_pos>=m_end;
     }
 
+    bool reader::is_begin() const
+    {
+        return m_pos<=m_begin;
+    }
+
     bool reader::is_eol_or_end() const
     {
         return m_pos>=m_end || *m_pos==m_eol[0];
+    }
+
+    reader& reader::anywhere_to_next_record_begin()
+    {
+        int ntries = 0;
+        const char *pos = m_pos; // record current position
+        while (ntries++<30) {
+            // seek to an EOL
+            while (!is_eol_or_end())  m_pos++;
+            if (is_end()) {
+                m_pos = pos;
+                return *this;
+            }
+            // move over EOL
+            skip_eol();
+            int ngood_records = 0;
+            while (ngood_records<5)
+            {
+                int nfields;
+                try {
+                    skip_record(nfields);
+                } catch (...) {
+                    break;
+                }
+                if (nfields != m_nfields) break;
+                ngood_records++;
+            }
+            if (ngood_records == 5) break; 
+        }
+        return *this;
     }
 }
