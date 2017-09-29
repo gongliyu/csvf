@@ -154,3 +154,11 @@ BOOST_AUTO_TEST_CASE(blank_lines)
     }
     BOOST_TEST(!reader);
 }
+
+BOOST_AUTO_TEST_CASE(anywhere_to_next_record_begin)
+{
+    csvf::reader reader("simple.csv");
+    reader.skip_field().anywhere_to_next_record_begin();
+    auto offset = reader.pos_offset();
+    BOOST_TEST(offset==15);
+}

@@ -5,6 +5,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdint>
+#include <cstddef>
 #include <stdexcept>
 #include <boost/iostreams/device/mapped_file.hpp>
 #include <boost/utility/string_view.hpp>
@@ -113,17 +114,19 @@ namespace csvf
             m_sep = '\0';
             m_eol.clear();
             m_nfields = -1;
+            ptrdiff_t begin_offset=-1, end_offset=-1;
             options::assign(opts,
+                            "begin_offset", begin_offset,
+                            "end_offset", end_offset,
                             "quote_rule", m_quote_rule,
                             "eol", m_eol,
                             "sep", m_sep,
                             "fill", m_fill,
                             "strip_white", m_strip_white,
-                            "skip_blank_lines", m_skip_blank_lines,                            "quote", m_quote,
+                            "skip_blank_lines", m_skip_blank_lines,
+                            "quote", m_quote,
                             "verbose", m_verbose);
 
-            
-            
             m_begin = m_file.data();
             m_end = m_file.data() + m_file.size();
             strip_if_bom();
@@ -131,23 +134,21 @@ namespace csvf
             strip_space();
             detect_sep_quote_rule_nfields();
 
-            // deal with options "begin_offset"
-            auto it = opts.find("begin_offset");
-            if (it != opts.end()) {
-                long long unsigned begin_offset = options::many_static_cast<long long unsigned, int, size_t>(it->second);
+            if (begin_offset > 0) {
                 m_begin = m_file.data() + begin_offset;
             }
 
-            // deal with options "end_offset"
-            it = opts.find("end_offset");
-            if (it != opts.end()) {
-                long long unsigned end_offset = options::many_static_cast<long long unsigned, int, size_t>(it->second);
+            if (end_offset > 0) {
                 m_end = m_file.data() + end_offset;
             }
+                
             
             return *this;
         }
-        
+
+        /**
+         * @return whether the end is reached
+         */
         operator bool() const
         {
             return m_pos<m_end;
@@ -288,6 +289,7 @@ namespace csvf
          * record, otherwise, an exception will be thrown.
          */
         /**@{*/
+        
         /**
          * @param record variable to store the content of the record
          */
@@ -362,6 +364,21 @@ namespace csvf
         std::vector<std::string> field_names() const
         {
             return m_field_names;
+        }
+
+        ptrdiff_t begin_offset() const
+        {
+            return m_begin - m_file.data();
+        }
+
+        ptrdiff_t end_offset() const
+        {
+            return m_end - m_file.data();
+        }
+
+        ptrdiff_t pos_offset() const
+        {
+            return m_pos - m_file.data();
         }
         
     protected:

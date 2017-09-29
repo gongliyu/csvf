@@ -606,8 +606,10 @@ namespace csvf
                 m_pos = pos;
                 return *this;
             }
+
             // move over EOL
             skip_eol();
+            const char *pos2 = m_pos; // record begin
             int ngood_records = 0;
             while (ngood_records<5)
             {
@@ -620,8 +622,12 @@ namespace csvf
                 if (nfields != m_nfields) break;
                 ngood_records++;
             }
-            if (ngood_records == 5) break; 
+            if (ngood_records == 5) {
+                m_pos = pos2;
+                break;
+            }
         }
+        if (ntries==30) m_pos = pos;
         return *this;
     }
 }
