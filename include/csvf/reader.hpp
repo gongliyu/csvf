@@ -380,6 +380,8 @@ namespace csvf
         {
             return m_pos - m_file.data();
         }
+
+        std::vector<ptrdiff_t> chunk(int nchunks);
         
     protected:
         std::string m_filename;

@@ -609,7 +609,7 @@ namespace csvf
 
             // move over EOL
             skip_eol();
-            const char *pos2 = m_pos; // record begin
+            const char *record_begin = m_pos; // record begin
             int ngood_records = 0;
             while (ngood_records<5)
             {
@@ -623,11 +623,21 @@ namespace csvf
                 ngood_records++;
             }
             if (ngood_records == 5) {
-                m_pos = pos2;
+                m_pos = record_begin;
                 break;
             }
         }
         if (ntries==30) m_pos = pos;
         return *this;
+    }
+
+    std::vector<ptrdiff_t> reader::chunk(int nchunks)
+    {
+        // equally sample 100 points, then estimate nrecords/bytes for
+        // each point
+        
+
+        // using the estimated density to estimate chunks which have
+        // equal number of records
     }
 }
