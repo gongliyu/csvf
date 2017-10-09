@@ -9,6 +9,7 @@ endif()
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(Boost REQUIRED COMPONENTS iostreams filesystem system program_options)
+message(${Boost_INCLUDE_DIRS})
 
 include(CTest)
 

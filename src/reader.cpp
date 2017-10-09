@@ -158,6 +158,7 @@ namespace csvf
             else
                 throw std::logic_error("some logic error in the code");
         }
+        return *this;
     }
 
     reader& reader::strip_space()
@@ -443,6 +444,7 @@ namespace csvf
     {
         skip_field_content();
         skip_if_sep();
+        return *this;
     }
     
     reader& reader::skip_sep()
@@ -633,11 +635,13 @@ namespace csvf
 
     std::vector<ptrdiff_t> reader::chunk(int nchunks)
     {
+        std::vector<ptrdiff_t> offsets;
         // equally sample 100 points, then estimate nrecords/bytes for
         // each point
         
 
         // using the estimated density to estimate chunks which have
         // equal number of records
+        return offsets;
     }
 }
