@@ -307,6 +307,7 @@ namespace csvf
                     <<" top nfields="<<topNumFields
                     <<std::endl;
         }
+        return *this;
     }
 
     reader& reader::skip_if_white()
