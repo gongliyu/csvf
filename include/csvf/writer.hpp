@@ -58,9 +58,16 @@ namespace csvf
         {
             m_filename = fname;
             m_stream.open(fname);
+            
         };
 
-        
+
+        /**
+         * write a record to file 
+         *
+         * @param record a record represented as a container of fields
+         */
+        /**@{*/
         template <typename RecordType>
         writer& write_record(const RecordType& record)
         {
@@ -80,6 +87,7 @@ namespace csvf
         {
             return write_record(record);
         }
+        /**@}*/
         
         writer& flush();
         writer& close();
