@@ -377,6 +377,16 @@ namespace csvf
         }
 
         /**
+         * Get verbose of this reader
+         *
+         * @return the verbose property
+         */
+        bool verbose() const
+        {
+            return m_verbose;
+        }
+
+        /**
          * Get the number of fields detected by this reader
          *
          * @return number of fields
