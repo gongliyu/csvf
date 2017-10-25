@@ -357,6 +357,16 @@ namespace csvf
         }
 
         /**
+         * Get the strip_white property of this reader
+         *
+         * @return strip_white property
+         */
+        bool strip_white() const
+        {
+            return m_strip_white;
+        }
+        
+        /**
          * Get the number of fields detected by this reader
          *
          * @return number of fields
