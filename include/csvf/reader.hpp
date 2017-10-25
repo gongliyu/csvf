@@ -365,7 +365,17 @@ namespace csvf
         {
             return m_skip_blank_lines;
         }
-        
+
+        /**
+         * Get quote of this reader
+         *
+         * @return the quote character
+         */
+        char quote() const
+        {
+            return m_quote;
+        }
+
         /**
          * Get the number of fields detected by this reader
          *
