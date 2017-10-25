@@ -347,6 +347,16 @@ namespace csvf
         }
 
         /**
+         * Get the fill property of this reader
+         *
+         * @return fill property
+         */
+        bool fill() const
+        {
+            return m_fill;
+        }
+
+        /**
          * Get the number of fields detected by this reader
          *
          * @return number of fields
