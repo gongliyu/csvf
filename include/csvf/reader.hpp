@@ -307,26 +307,6 @@ namespace csvf
         reader& anywhere_to_next_record_begin();
 
         /**
-         * Get the end of line characters of this reader
-         *
-         * @return end of line characters
-         */
-        std::vector<char> eol() const
-        {
-            return m_eol;
-        };
-
-        /**
-         * Get the file size
-         *
-         * @return file size
-         */
-        size_type file_size() const
-        {
-            return m_file.size();
-        };
-
-        /**
          * Get the separator character of this reader
          *
          * @return separator character
@@ -335,6 +315,16 @@ namespace csvf
         {
             return m_sep;
         }
+
+        /**
+         * Get the end of line characters of this reader
+         *
+         * @return end of line characters
+         */
+        std::vector<char> eol() const
+        {
+            return m_eol;
+        };
 
         /**
          * Get the quote rule of this reader
@@ -365,6 +355,16 @@ namespace csvf
         {
             return m_strip_white;
         }
+
+        /**
+         * Get the skip_blank_lines property of this reader
+         *
+         * @return skip_blank_lines property
+         */
+        bool skip_blank_lines() const
+        {
+            return m_skip_blank_lines;
+        }
         
         /**
          * Get the number of fields detected by this reader
@@ -376,6 +376,7 @@ namespace csvf
             return m_nfields;
         }
 
+
         /**
          * Get the field names detected by this reader
          *
@@ -385,6 +386,16 @@ namespace csvf
         {
             return m_field_names;
         }
+
+        /**
+         * Get the file size
+         *
+         * @return file size
+         */
+        size_type file_size() const
+        {
+            return m_file.size();
+        };
 
         ptrdiff_t begin_offset() const
         {
