@@ -161,4 +161,18 @@ BOOST_AUTO_TEST_CASE(anywhere_to_next_record_begin)
     reader.skip_field().anywhere_to_next_record_begin();
     auto offset = reader.pos_offset();
     BOOST_TEST(offset==15);
+    reader.skip_field().anywhere_to_next_record_begin();
+    offset = reader.pos_offset();
+    BOOST_TEST(offset==30);
+    reader.skip_field().anywhere_to_next_record_begin();
+    offset = reader.pos_offset();
+    BOOST_TEST(offset==45);
+    reader.skip_field().anywhere_to_next_record_begin();
+    offset = reader.pos_offset();
+    BOOST_TEST(offset==51);
+    reader.skip_field().anywhere_to_next_record_begin();
+    offset = reader.pos_offset();
+    BOOST_TEST(offset==57);
+    reader.skip_field().anywhere_to_next_record_begin();
+    BOOST_TEST(!reader);
 }

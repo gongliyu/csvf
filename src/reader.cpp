@@ -606,7 +606,7 @@ namespace csvf
             // seek to an EOL
             while (!is_eol_or_end())  m_pos++;
             if (is_end()) {
-                m_pos = pos;
+                //m_pos = pos;
                 return *this;
             }
 
@@ -625,12 +625,13 @@ namespace csvf
                 if (nfields != m_nfields) break;
                 ngood_records++;
             }
-            if (ngood_records == 5) {
+            
+            if (ngood_records == 5 | ngood_records > 0 && is_end()) {
                 m_pos = record_begin;
                 break;
             }
         }
-        if (ntries==30) m_pos = pos;
+        //if (ntries==30) m_pos = pos;
         return *this;
     }
 
