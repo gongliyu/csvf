@@ -327,6 +327,8 @@ namespace csvf
     reader& reader::skip_field_content(
         const char **nwBegin, const char**nwEnd)
     {
+        if (is_end())
+            throw std::runtime_error("end of file");
         // The current position should be at the begin of a field
         if(m_pos!=m_begin && *(m_pos-1)!=m_sep &&
                *(m_pos-1)!=m_eol.back())
