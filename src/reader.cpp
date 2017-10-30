@@ -27,6 +27,9 @@ namespace
         case csvf::reader::quote_rule_type::none:
             stream<<"none";
             break;
+        case csvf::reader::quote_rule_type::auto_detect:
+            stream<<"auto_detect";
+            break;
         default:
             std::logic_error("internal error");
         }
@@ -631,7 +634,7 @@ namespace csvf
                 ngood_records++;
             }
             
-            if (ngood_records == 5 | ngood_records > 0 && is_end()) {
+            if (ngood_records == 5 || ngood_records > 0 && is_end()) {
                 m_pos = record_begin;
                 break;
             }
