@@ -63,13 +63,21 @@ namespace csvf
          * quote inside field. For example: <<...,"hello
          * "world"",...>>
          *
-         * 4. none \n Fields are not quoted at all. Any quote characters appearing anywhere inside fields will be treated as any other regular characters. For example: <<...,hello "world",...>>
+         * 4. none \n Fields are not quoted at all. Any quote
+         * characters appearing anywhere inside fields will be treated
+         * as any other regular characters. For example: <<...,hello
+         * "world",...>>
+         *
+         * 5. auto_detect \n not specified when openning a csv file,
+         * will detect quote rule automatically. After the the file is
+         * openned, m_quote_rule will be one of the previous ones.
          */
         enum class quote_rule_type {
             doubled,
             escaped,
             verbatim,
-            none
+            none,
+            auto_detect
         };
 
         /** @name Constructors and destructors
@@ -111,26 +119,26 @@ namespace csvf
             m_file.close();
             m_file.open(fname);
             auto opts = options::parse(args...);
-            m_sep = '\0';
-            m_eol.clear();
-            m_nfields = -1;
+            init_defaults();
             ptrdiff_t begin_offset=-1, end_offset=-1;
             options::assign(opts,
-                            "begin_offset", begin_offset,
-                            "end_offset", end_offset,
-                            "quote_rule", m_quote_rule,
-                            "eol", m_eol,
                             "sep", m_sep,
+                            "eol", m_eol,
+                            "quote_rule", m_quote_rule,
                             "fill", m_fill,
                             "strip_white", m_strip_white,
                             "skip_blank_lines", m_skip_blank_lines,
                             "quote", m_quote,
-                            "verbose", m_verbose);
+                            "verbose", m_verbose,
+                            "begin_offset", begin_offset,
+                            "end_offset", end_offset);
 
             m_begin = m_file.data();
             m_end = m_file.data() + m_file.size();
             strip_if_bom();
-            detect_eol();
+            if (m_eol.empty()) {
+                detect_eol();
+            }
             strip_space();
             detect_sep_quote_rule_nfields();
 
@@ -142,7 +150,6 @@ namespace csvf
                 m_end = m_file.data() + end_offset;
             }
                 
-            
             return *this;
         }
 
@@ -396,17 +403,6 @@ namespace csvf
             return m_nfields;
         }
 
-
-        /**
-         * Get the field names detected by this reader
-         *
-         * @return field names
-         */
-        std::vector<std::string> field_names() const
-        {
-            return m_field_names;
-        }
-
         /**
          * Get the file size
          *
@@ -435,6 +431,8 @@ namespace csvf
         std::vector<ptrdiff_t> chunk(int nchunks);
         
     protected:
+        void init_defaults();
+            
         std::string m_filename;
         boost::iostreams::mapped_file_source m_file;
         const char *m_pos = nullptr;
@@ -442,7 +440,7 @@ namespace csvf
         const char *m_end = nullptr;
         int m_nfields = -1;
 
-        quote_rule_type m_quote_rule{quote_rule_type::doubled};
+        quote_rule_type m_quote_rule{quote_rule_type::auto_detect};
         
         std::vector<char> m_eol;
         char m_sep{'\0'};
@@ -452,8 +450,8 @@ namespace csvf
         bool m_skip_blank_lines{true};
         char m_quote{'"'};
         //bool m_blankIsANAString{false};
-        std::vector<std::string> m_NAStrings{{"NA"}};
-        std::vector<std::string> m_field_names{};
+        //std::vector<std::string> m_NAStrings{{"NA"}};
+        //std::vector<std::string> m_field_names{};
         bool m_verbose{true};
     };
 }

@@ -200,9 +200,15 @@ namespace csvf
         // for each contiguous group with the same number of fields
         // the first and second element in pairs are number of fields
         // and number of lines respectively.
-        std::array<quote_rule_type,4> rules{
-            quote_rule_type::doubled, quote_rule_type::escaped,
+        std::vector<quote_rule_type> rules(0);
+        if (m_quote_rule == quote_rule_type::auto_detect) {
+            rules = {
+                quote_rule_type::doubled, quote_rule_type::escaped,
                 quote_rule_type::verbatim, quote_rule_type::none};
+        } else {
+            rules.push_back(m_quote_rule);
+        }
+        
         for (auto sep : seps)
         {
             m_sep = sep;
@@ -252,7 +258,6 @@ namespace csvf
                         topSep = sep;
                         topquote_rule = rule;
                         updated = true;
-                        std::cout<<"updated."<<std::endl;
                     }
                 }
                 if (updated) topNmax = nmax;
@@ -293,8 +298,6 @@ namespace csvf
         if (!m_fill && nfields!=m_nfields)
             throw std::logic_error("Internal error");
 
-        std::cout<<"m_sep="<<sep2str(m_sep)<<std::endl;
-        
         if (m_verbose)
         {
             if (m_sep==m_eol[0])
@@ -647,5 +650,21 @@ namespace csvf
         // using the estimated density to estimate chunks which have
         // equal number of records
         return offsets;
+    }
+
+    void reader::init_defaults()
+    {
+        m_pos = nullptr;
+        m_begin = nullptr;
+        m_end = nullptr;
+        m_nfields = -1;
+        m_quote_rule = quote_rule_type::auto_detect;
+        m_eol.clear();
+        m_sep = '\0';
+        m_fill = true;
+        m_strip_white = true;
+        m_skip_blank_lines = true;
+        m_quote = '"';
+        m_verbose = true;
     }
 }
