@@ -645,13 +645,76 @@ namespace csvf
 
     std::vector<ptrdiff_t> reader::chunk(int nchunks)
     {
-        std::vector<ptrdiff_t> offsets;
-        // equally sample 100 points, then estimate nrecords/bytes for
-        // each point
-        
+        const char *pos_original = m_pos;
 
-        // using the estimated density to estimate chunks which have
-        // equal number of records
+        // sample positions, including the begin and end
+        int ncuts = std::min(100, nchunks*10);
+        std::vector<const char*> positions(0);
+        positions.push_back(m_begin);
+        for (int i=1; i<ncuts; i++) {
+            m_pos = m_begin + i*(m_end-m_begin)/ncuts;
+            anywhere_to_next_record_begin();
+            if (!(is_end() || m_pos==positions.back())) {
+                positions.push_back(m_pos);
+            }
+        }
+
+        // estimate density using 20 records
+        std::vector<double> density(0);
+        for (auto pos : positions) {
+            m_pos = pos;
+            double n = 0;
+            while (!(is_end() || n++ > 20)) {
+                skip_record();
+            }
+            density.push_back(n/(m_pos-pos));
+        }
+        assert(positions.size()==density.size());
+        // we have not yet implemented
+        // anywhere_to_previous_record_begin() yet, so we assume the
+        // density of m_end is the same as the sample point before it.
+        positions.push_back(m_end);
+        density.push_back(density.back());
+        size_t nsamples = positions.size();
+
+        // calculate the cumulative function by trapezoidal estimation
+        std::vector<double> cumul(nsamples, 0);
+        for (int i=1; i<density.size(); i++) {
+            cumul[i] = cumul[i-1] + 0.5*(positions[i]-positions[i-1])*(density[i-1]+density[i]);
+        }
+
+        // find the quantiles
+        double total = cumul.back();
+        
+        std::vector<ptrdiff_t> offsets(0);
+        if (nchunks+1 >= nsamples) {
+            // there less nsamples than required chunks, then return
+            // the samples to user because this is the best we can do
+            std::transform(positions.begin(), positions.end(),
+                           std::back_inserter(offsets),
+                           [this](const char* pos)->ptrdiff_t {
+                               return pos-this->m_file.data();
+                           });
+        } else {
+            offsets.push_back(positions[0]-m_file.data());
+            int i=1;
+            double quantile = total / nchunks;
+            double pre_diff = total;
+            while (quantile < total) {
+                double diff = std::abs(cumul[i]-quantile);
+                std::cout<<"cumul["<<i<<"]="<<cumul[i]<<"\t"
+                         <<"quantile="<<quantile<<"\t"
+                         <<"diff="<<diff<<std::endl;
+                if (diff > pre_diff) {
+                    offsets.push_back(positions[i-1]-m_file.data());
+                    quantile += total / nchunks;
+                }
+                pre_diff = diff;
+                i++;
+            }
+            offsets.push_back(m_end-m_file.data());
+        }
+        m_pos = pos_original;
         return offsets;
     }
 

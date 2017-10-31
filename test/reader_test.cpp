@@ -176,3 +176,15 @@ BOOST_AUTO_TEST_CASE(anywhere_to_next_record_begin)
     reader.skip_field().anywhere_to_next_record_begin();
     BOOST_TEST(!reader);
 }
+
+BOOST_AUTO_TEST_CASE(chunk)
+{
+    csvf::reader reader("chunk.csv");
+    std::vector<ptrdiff_t> offsets = reader.chunk(2);
+    std::cout<<"offset1="<<offsets[0]<<"\t"
+             <<"offset2="<<offsets[1]<<"\t"
+             <<"offset3="<<offsets[2]<<"\t"
+             <<"offsets.size()="<<offsets.size()
+             <<std::endl;
+    BOOST_TEST(false);
+}
