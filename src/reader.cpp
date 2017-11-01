@@ -691,20 +691,20 @@ namespace csvf
             cumul[i] = cumul[i-1] + 0.5*(positions[i]-positions[i-1])*(density[i-1]+density[i]);
         }
 
-        std::cout<<"positions:"<<std::endl;
-        for (int i=0; i<positions.size(); i++)
-            std::cout<<i+1<<":"<<positions[i]-m_file.data()<<"\t";
-        std::cout<<std::endl;
+        // std::cout<<"positions:"<<std::endl;
+        // for (int i=0; i<positions.size(); i++)
+        //     std::cout<<i+1<<":"<<positions[i]-m_file.data()<<"\t";
+        // std::cout<<std::endl;
 
-        std::cout<<"density:"<<std::endl;
-        for (int i=0; i<density.size(); i++)
-            std::cout<<i+1<<":"<<density[i]<<"\t";
-        std::cout<<std::endl;
+        // std::cout<<"density:"<<std::endl;
+        // for (int i=0; i<density.size(); i++)
+        //     std::cout<<i+1<<":"<<density[i]<<"\t";
+        // std::cout<<std::endl;
 
-        std::cout<<"cumulative:"<<std::endl;
-        for (int i=0; i<cumul.size(); i++)
-            std::cout<<i+1<<":"<<cumul[i]<<"\t";
-        std::cout<<std::endl;
+        // std::cout<<"cumulative:"<<std::endl;
+        // for (int i=0; i<cumul.size(); i++)
+        //     std::cout<<i+1<<":"<<cumul[i]<<"\t";
+        // std::cout<<std::endl;
 
         // find the quantiles
         double total = cumul.back();
