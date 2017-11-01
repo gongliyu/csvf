@@ -613,14 +613,11 @@ namespace csvf
         const char *pos = m_pos; // record current position
         while (ntries++<30) {
             // seek to an EOL
-            while (!is_eol_or_end())  m_pos++;
             if (is_end()) {
-                //m_pos = pos;
                 return *this;
             }
 
             // move over EOL
-            skip_eol();
             const char *record_begin = m_pos; // record begin
             int ngood_records = 0;
             while (ngood_records<5)
@@ -636,11 +633,17 @@ namespace csvf
             }
             
             if (ngood_records == 5 || ngood_records > 0 && is_end()) {
+                // succeed
                 m_pos = record_begin;
                 break;
+            } else {
+                // fail, try next
+                m_pos = record_begin;
+                // seek to eol for next possible record begin
+                while (!is_eol_or_end())  m_pos++;
+                skip_if_eol();
             }
         }
-        //if (ntries==30) m_pos = pos;
         return *this;
     }
 
@@ -665,12 +668,11 @@ namespace csvf
         std::vector<double> density(0);
         for (auto pos : positions) {
             m_pos = pos;
-            double n = -1;
-            while (!(is_end() || ++n >= nrecords_per_position)) {
+            double n = 0;
+            while (!(is_end() || n > nrecords_per_position)) {
                 skip_record();
-                std::cout<<"bytes:"<<m_pos-pos<<"\tn="<<n<<std::endl;
+                n++;
             }
-            std::cout<<"nnnn="<<n<<std::endl;
             density.push_back(n/(m_pos-pos));
         }
         assert(positions.size()==density.size());
@@ -688,6 +690,11 @@ namespace csvf
         for (int i=1; i<npositions; i++) {
             cumul[i] = cumul[i-1] + 0.5*(positions[i]-positions[i-1])*(density[i-1]+density[i]);
         }
+
+        std::cout<<"positions:"<<std::endl;
+        for (int i=0; i<positions.size(); i++)
+            std::cout<<i+1<<":"<<positions[i]-m_file.data()<<"\t";
+        std::cout<<std::endl;
 
         std::cout<<"density:"<<std::endl;
         for (int i=0; i<density.size(); i++)
