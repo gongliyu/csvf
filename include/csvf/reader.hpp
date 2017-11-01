@@ -428,7 +428,7 @@ namespace csvf
             return m_pos - m_file.data();
         }
 
-        std::vector<ptrdiff_t> chunk(int nchunks);
+        std::vector<ptrdiff_t> chunk(int nchunks, int npositions=-1, int nrecords_per_position=10);
         
     protected:
         void init_defaults();

@@ -1,6 +1,7 @@
 #include <iostream>
 #include <iomanip>
 #include <cstdlib>
+#include <cmath>
 #include <cassert>
 #include <array>
 #include <algorithm>
@@ -643,52 +644,67 @@ namespace csvf
         return *this;
     }
 
-    std::vector<ptrdiff_t> reader::chunk(int nchunks)
+    std::vector<ptrdiff_t> reader::chunk(int nchunks, int npositions, int nrecords_per_position)
     {
         const char *pos_original = m_pos;
 
         // sample positions, including the begin and end
-        int ncuts = std::min(100, nchunks*10);
+        if (npositions < 2)
+            npositions = std::max(101, 10*nchunks);
         std::vector<const char*> positions(0);
         positions.push_back(m_begin);
-        for (int i=1; i<ncuts; i++) {
-            m_pos = m_begin + i*(m_end-m_begin)/ncuts;
+        for (int i=1; i<npositions-1; i++) {
+            m_pos = m_begin + i*(m_end-m_begin)/(npositions-1);
             anywhere_to_next_record_begin();
             if (!(is_end() || m_pos==positions.back())) {
                 positions.push_back(m_pos);
             }
         }
 
-        // estimate density using 20 records
+        // estimate density using nrecords_per_sample records
         std::vector<double> density(0);
         for (auto pos : positions) {
             m_pos = pos;
-            double n = 0;
-            while (!(is_end() || n++ > 20)) {
+            double n = -1;
+            while (!(is_end() || ++n >= nrecords_per_position)) {
                 skip_record();
+                std::cout<<"bytes:"<<m_pos-pos<<"\tn="<<n<<std::endl;
             }
+            std::cout<<"nnnn="<<n<<std::endl;
             density.push_back(n/(m_pos-pos));
         }
         assert(positions.size()==density.size());
+
+
         // we have not yet implemented
         // anywhere_to_previous_record_begin() yet, so we assume the
         // density of m_end is the same as the sample point before it.
         positions.push_back(m_end);
         density.push_back(density.back());
-        size_t nsamples = positions.size();
+        npositions = positions.size();
 
         // calculate the cumulative function by trapezoidal estimation
-        std::vector<double> cumul(nsamples, 0);
-        for (int i=1; i<density.size(); i++) {
+        std::vector<double> cumul(npositions, 0);
+        for (int i=1; i<npositions; i++) {
             cumul[i] = cumul[i-1] + 0.5*(positions[i]-positions[i-1])*(density[i-1]+density[i]);
         }
+
+        std::cout<<"density:"<<std::endl;
+        for (int i=0; i<density.size(); i++)
+            std::cout<<i+1<<":"<<density[i]<<"\t";
+        std::cout<<std::endl;
+
+        std::cout<<"cumulative:"<<std::endl;
+        for (int i=0; i<cumul.size(); i++)
+            std::cout<<i+1<<":"<<cumul[i]<<"\t";
+        std::cout<<std::endl;
 
         // find the quantiles
         double total = cumul.back();
         
         std::vector<ptrdiff_t> offsets(0);
-        if (nchunks+1 >= nsamples) {
-            // there less nsamples than required chunks, then return
+        if (nchunks+1 >= npositions) {
+            // there less npositions than required chunks, then return
             // the samples to user because this is the best we can do
             std::transform(positions.begin(), positions.end(),
                            std::back_inserter(offsets),
@@ -702,9 +718,6 @@ namespace csvf
             double pre_diff = total;
             while (quantile < total) {
                 double diff = std::abs(cumul[i]-quantile);
-                std::cout<<"cumul["<<i<<"]="<<cumul[i]<<"\t"
-                         <<"quantile="<<quantile<<"\t"
-                         <<"diff="<<diff<<std::endl;
                 if (diff > pre_diff) {
                     offsets.push_back(positions[i-1]-m_file.data());
                     quantile += total / nchunks;

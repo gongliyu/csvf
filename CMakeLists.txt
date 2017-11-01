@@ -5,7 +5,6 @@ if(POLICY CMP0022)
   cmake_policy(SET CMP0022 NEW)
 endif()
 
-
 set(CMAKE_CXX_STANDARD 14)
 
 find_package(Boost REQUIRED COMPONENTS iostreams filesystem system program_options)
