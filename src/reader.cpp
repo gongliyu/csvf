@@ -132,6 +132,7 @@ namespace csvf
             m_eol.push_back(*pos);
             if(*pos=='\r')
             {
+                std::cout<<"*pos==\\r"<<std::endl;
                 if(pos+1<m_end && *(pos+1)=='\n')
                 {
                     if (m_verbose)
@@ -150,6 +151,7 @@ namespace csvf
             }
             else if (*pos=='\n')
             {
+                std::cout<<"*pos==\\n"<<std::endl;
                 if(pos+1<m_end && *(pos+1)=='\r')
                 {
                     if (m_verbose)
