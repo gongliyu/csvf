@@ -6,35 +6,24 @@
 #include <csvf/reader.hpp>
 
 
-BOOST_AUTO_TEST_CASE(file_size)
-{
-    BOOST_TEST(csvf::reader("2008head.csv").file_size() == 47754u);
-}
-
 BOOST_AUTO_TEST_CASE(detect_eol)
 {
-    // BOOST_TEST(csvf::reader("2008head.csv").eol()==
-    //            std::vector<char>{'\n'},
-    //            boost::test_tools::per_element());
-    // BOOST_TEST(csvf::reader("doublequote_newline.csv").eol()==
-    //            std::vector<char>{'\n'},
-    //            boost::test_tools::per_element());
-    // BOOST_TEST(csvf::reader("russellCRLF.csv").eol()==
-    //            std::vector<char>({'\r', '\n'}),
-    //            boost::test_tools::per_element());
-    BOOST_TEST(csvf::reader("testdata.csv").eol()==
+    BOOST_TEST(csvf::reader("simple.csv").eol()==
+               std::vector<char>{'\n'},
+               boost::test_tools::per_element());
+    BOOST_TEST(csvf::reader("CRLF.csv").eol()==
                std::vector<char>({'\r', '\n'}),
                boost::test_tools::per_element());
-    // BOOST_CHECK_THROW(csvf::reader("russellCRCRLF.csv").eol(),
-    //                   std::runtime_error);
+    BOOST_CHECK_THROW(csvf::reader("russellCRCRLF.csv").eol(),
+                      std::runtime_error);
 }
 
 BOOST_AUTO_TEST_CASE(detect_sep)
 {
-    BOOST_TEST(csvf::reader("2008head.csv").sep()==',');
+    BOOST_TEST(csvf::reader("simple.csv").sep()==',');
     BOOST_TEST(csvf::reader("doublequote_newline.csv").sep()==',');
-    BOOST_TEST(csvf::reader("issue_773_fread.txt").sep()=='|');
-    BOOST_TEST(csvf::reader("ch11b.dat").sep()==' ');
+    BOOST_TEST(csvf::reader("sep_vline.csv").sep()=='|');
+    BOOST_TEST(csvf::reader("sep_blank.dat").sep()==' ');
 }
 
 BOOST_AUTO_TEST_CASE(detect_quote_rule)
@@ -48,7 +37,7 @@ BOOST_AUTO_TEST_CASE(detect_nfields)
     BOOST_TEST(csvf::reader("doublequote_newline.csv").nfields()==2);
     BOOST_TEST(csvf::reader("unescaped.csv").nfields()==3);
     BOOST_TEST(csvf::reader("allchar.csv").nfields()==2);
-    BOOST_TEST(csvf::reader("ch11b.dat").nfields()==5);
+    BOOST_TEST(csvf::reader("sep_blank.dat").nfields()==5);
 }
 
 BOOST_AUTO_TEST_CASE(read_record_onecolumn)
