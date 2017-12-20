@@ -142,7 +142,7 @@ BOOST_AUTO_TEST_CASE(combine_by_field)
 
 BOOST_AUTO_TEST_CASE(combine_by_field_notmatch)
 {
-    std::vector<std::string> infnames{"combine1.csv", "ch11b.dat"};
+    std::vector<std::string> infnames{"combine1.csv", "chunk.csv"};
     std::string outfname = boost::filesystem::unique_path().native();
 
     BOOST_CHECK_THROW(csvf::combine_by_field(infnames, outfname), csvf::bad_format);

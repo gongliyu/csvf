@@ -14,7 +14,7 @@ BOOST_AUTO_TEST_CASE(detect_eol)
     BOOST_TEST(csvf::reader("CRLF.csv").eol()==
                std::vector<char>({'\r', '\n'}),
                boost::test_tools::per_element());
-    BOOST_CHECK_THROW(csvf::reader("russellCRCRLF.csv").eol(),
+    BOOST_CHECK_THROW(csvf::reader("CRCRLF.csv").eol(),
                       std::runtime_error);
 }
 
@@ -73,15 +73,32 @@ BOOST_AUTO_TEST_CASE(read_record_onecolumn)
 
 BOOST_AUTO_TEST_CASE(read_record)
 {
-    csvf::reader reader("ch11b.dat");
+    csvf::reader reader("doublequote_newline.csv");
     BOOST_TEST(
         reader.read_record()==
-        std::vector<std::string>({"001","307","0930","36.58","0"}),
+        std::vector<std::string>({"A","B"}),
+        boost::test_tools::per_element());
+    for (int i=0; i<7; i++) {
+        BOOST_TEST(
+            reader.read_record()==
+            std::vector<std::string>({"1","a"}),
+            boost::test_tools::per_element());
+    }
+    BOOST_TEST(
+        reader.read_record()==
+        std::vector<std::string>({"1","\"embedded \"\"field\"\"\nwith some embedded new\nlines as well\""}),
         boost::test_tools::per_element());
     BOOST_TEST(
         reader.read_record()==
-        std::vector<std::string>({"002","307","0940","36.73","0"}),
+        std::vector<std::string>({"2","\"not this one\""}),
         boost::test_tools::per_element());
+    for (int i=0; i<27; i++) {
+        BOOST_TEST(
+            reader.read_record()==
+            std::vector<std::string>({"1","a"}),
+            boost::test_tools::per_element());
+    }
+    BOOST_TEST(!reader);
     
     reader.open("unescaped.csv");
     BOOST_TEST(
