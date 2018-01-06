@@ -413,22 +413,50 @@ namespace csvf
             return m_file.size();
         };
 
+        /**
+         * Get the difference in bytes between the beginning of
+         * content and beginning of the file
+         *
+         * @return offset in bytes
+         */
         ptrdiff_t begin_offset() const
         {
             return m_begin - m_file.data();
         }
 
+        /**
+         * Get the difference in bytes between the end of content and
+         * the beginning of the file
+         *
+         * @return offset in bytes
+         */
         ptrdiff_t end_offset() const
         {
             return m_end - m_file.data();
         }
 
+        /**
+         * Get the difference in bytes between the current position
+         * and the beginning of the file
+         *
+         * @return offset in bytes
+         */
         ptrdiff_t pos_offset() const
         {
             return m_pos - m_file.data();
         }
 
+        /**
+         * @name chunk
+         */
+        /**@{*/
+        std::vector<ptrdiff_t>
+        chunk(double& estimated_total_nrecords,
+              int nchunks, int npositions=-1,
+              int nrecords_per_position=10);
+        
         std::vector<ptrdiff_t> chunk(int nchunks, int npositions=-1, int nrecords_per_position=10);
+        /**@}*/
         
     protected:
         void init_defaults();

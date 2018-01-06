@@ -649,7 +649,7 @@ namespace csvf
         return *this;
     }
 
-    std::vector<ptrdiff_t> reader::chunk(int nchunks, int npositions, int nrecords_per_position)
+    std::vector<ptrdiff_t> reader::chunk(double& estimated_total_nrecords, int nchunks, int npositions, int nrecords_per_position)
     {
         const char *pos_original = m_pos;
 
@@ -709,7 +709,7 @@ namespace csvf
         // std::cout<<std::endl;
 
         // find the quantiles
-        double total = cumul.back();
+        estimated_total_nrecords = cumul.back();
         
         std::vector<ptrdiff_t> offsets(0);
         if (nchunks+1 >= npositions) {
@@ -723,13 +723,13 @@ namespace csvf
         } else {
             offsets.push_back(positions[0]-m_file.data());
             int i=1;
-            double quantile = total / nchunks;
-            double pre_diff = total;
-            while (quantile < total) {
+            double quantile = estimated_total_nrecords / nchunks;
+            double pre_diff = estimated_total_nrecords;
+            while (quantile < estimated_total_nrecords) {
                 double diff = std::abs(cumul[i]-quantile);
                 if (diff > pre_diff) {
                     offsets.push_back(positions[i-1]-m_file.data());
-                    quantile += total / nchunks;
+                    quantile += estimated_total_nrecords / nchunks;
                 }
                 pre_diff = diff;
                 i++;
@@ -737,9 +737,16 @@ namespace csvf
             offsets.push_back(m_end-m_file.data());
         }
         m_pos = pos_original;
-        return offsets;
+        return std::move(offsets);
     }
 
+    std::vector<ptrdiff_t> reader::chunk(int nchunks, int npositions, int nrecords_per_position)
+    {
+        double tmp;
+        return chunk(tmp, nchunks, npositions, nrecords_per_position);
+    }
+
+    
     void reader::init_defaults()
     {
         m_pos = nullptr;
