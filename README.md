@@ -1,4 +1,3 @@
-csvf
 *csvf* is a C++ library for csv file (especially large csv file) processing. Functionalities such as csv parsing, reading, writing, splitting, combining etc, are implemented as C++ classes, functions, and standalone executable programs. Various csv format can be automatically detected and parsed, including different separator, end of line, quote rules etc.
 
 <!-- markdown-toc start - Don't edit this section. Run M-x markdown-toc-refresh-toc -->

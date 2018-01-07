@@ -447,15 +447,15 @@ namespace csvf
         }
 
         /**
-         * @name chunk
+         * @name chunk_uniformly
          */
         /**@{*/
         std::vector<ptrdiff_t>
-        chunk(double& estimated_total_nrecords,
+        chunk_uniformly(double& estimated_total_nrecords,
               int nchunks, int npositions=-1,
               int nrecords_per_position=10);
         
-        std::vector<ptrdiff_t> chunk(int nchunks, int npositions=-1, int nrecords_per_position=10);
+        std::vector<ptrdiff_t> chunk_uniformly(int nchunks, int npositions=-1, int nrecords_per_position=10);
         /**@}*/
         
     protected:

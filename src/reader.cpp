@@ -112,36 +112,28 @@ namespace csvf
             std::cout<<"detect EOL"<<std::endl;
         m_eol.clear();
         const char *pos = m_begin;
-        while (pos<m_end && *pos!='\n' && *pos!='\r')
-        {
+        while (pos<m_end && *pos!='\n' && *pos!='\r') {
             if (*pos==m_quote)
                 while (++pos<m_end && *pos!=m_quote) {};
             pos++;
         }
 
-        if (pos>=m_end)
-        {
-            if (m_verbose)
+        if (pos>=m_end) {
+            if (m_verbose) {
                 std::cout<<"  Input ends before any \\r or \\n "
                     "observed. Input will be treated as a single row."
                          <<std::endl;
+            }
             m_eol.push_back('\n');
-        }
-        else
-        {
+        } else {
             m_eol.push_back(*pos);
-            if(*pos=='\r')
-            {
-                std::cout<<"*pos==\\r"<<std::endl;
-                if(pos+1<m_end && *(pos+1)=='\n')
-                {
+            if(*pos=='\r') {
+                if(pos+1<m_end && *(pos+1)=='\n') {
                     if (m_verbose)
                         std::cout<<"detected eol as \\r\\n (CRLF)"
                                  <<std::endl;
                     m_eol.push_back(*(pos+1));
-                }
-                else
-                {
+                } else {
                     if(pos+1<m_end && *(pos+1)=='\r')
                         throw(std::runtime_error("line ending is\\r\\r\\n"));
                     if (m_verbose)
@@ -151,9 +143,7 @@ namespace csvf
             }
             else if (*pos=='\n')
             {
-                std::cout<<"*pos==\\n"<<std::endl;
-                if(pos+1<m_end && *(pos+1)=='\r')
-                {
+                if(pos+1<m_end && *(pos+1)=='\r') {
                     if (m_verbose)
                         std::cout<<"detected eol as \\n\\r"<<std::endl;
                     m_eol.push_back('\r');
@@ -649,7 +639,7 @@ namespace csvf
         return *this;
     }
 
-    std::vector<ptrdiff_t> reader::chunk(double& estimated_total_nrecords, int nchunks, int npositions, int nrecords_per_position)
+    std::vector<ptrdiff_t> reader::chunk_uniformly(double& estimated_total_nrecords, int nchunks, int npositions, int nrecords_per_position)
     {
         const char *pos_original = m_pos;
 
@@ -740,10 +730,10 @@ namespace csvf
         return std::move(offsets);
     }
 
-    std::vector<ptrdiff_t> reader::chunk(int nchunks, int npositions, int nrecords_per_position)
+    std::vector<ptrdiff_t> reader::chunk_uniformly(int nchunks, int npositions, int nrecords_per_position)
     {
         double tmp;
-        return chunk(tmp, nchunks, npositions, nrecords_per_position);
+        return chunk_uniformly(tmp, nchunks, npositions, nrecords_per_position);
     }
 
     

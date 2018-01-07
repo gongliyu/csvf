@@ -186,14 +186,14 @@ BOOST_AUTO_TEST_CASE(anywhere_to_next_record_begin)
     BOOST_TEST(!reader);
 }
 
-BOOST_AUTO_TEST_CASE(chunk)
+BOOST_AUTO_TEST_CASE(chunk_uniformly)
 {
-    csvf::reader reader("chunk.csv");
-    std::vector<ptrdiff_t> offsets = reader.chunk(2, 81, 1);
+    csvf::reader reader("chunk_uniformly.csv");
+    std::vector<ptrdiff_t> offsets = reader.chunk_uniformly(2, 81, 1);
     BOOST_TEST(static_cast<double>(offsets[1]-offsets[0])/(offsets[2]-offsets[1])/3==1.0, boost::test_tools::tolerance(0.01));
 
     reader.open("simple2.csv");
-    offsets = reader.chunk(2, 11, 1);
+    offsets = reader.chunk_uniformly(2, 11, 1);
     BOOST_TEST(
         offsets==std::vector<ptrdiff_t>({0,50,100}),
         boost::test_tools::per_element());
